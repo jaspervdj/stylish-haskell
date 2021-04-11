@@ -17,6 +17,7 @@ module Language.Haskell.Stylish.Editor
     , delete
     , deleteLine
     , insert
+    , noop
     ) where
 
 
@@ -84,6 +85,9 @@ applyChanges changes0
 change :: Block a -> ([a] -> [a]) -> Change a
 change = Change
 
+--------------------------------------------------------------------------------
+noop :: Block a -> Change a
+noop = flip change $ id
 
 --------------------------------------------------------------------------------
 -- | Change a single line for some other lines

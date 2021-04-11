@@ -8,6 +8,7 @@ module Language.Haskell.Stylish.GHC
     -- * Unsafe getters
   , unsafeGetRealSrcSpan
   , getEndLineUnsafe
+  , getEndColumnUnsafe
   , getStartLineUnsafe
     -- * Standard settings
   , baseDynFlags
@@ -33,7 +34,7 @@ import qualified Outputable        as GHC
 import           PlatformConstants (PlatformConstants (..))
 import           SrcLoc            (GenLocated (..), Located, RealLocated,
                                     RealSrcSpan, SrcSpan (..), srcSpanEndLine,
-                                    srcSpanStartLine)
+                                    srcSpanStartLine, srcSpanEndCol)
 import           ToolSettings      (ToolSettings (..))
 
 unsafeGetRealSrcSpan :: Located a -> RealSrcSpan
@@ -46,6 +47,9 @@ getStartLineUnsafe = srcSpanStartLine . unsafeGetRealSrcSpan
 
 getEndLineUnsafe :: Located a -> Int
 getEndLineUnsafe = srcSpanEndLine . unsafeGetRealSrcSpan
+
+getEndColumnUnsafe :: Located a -> Int
+getEndColumnUnsafe = srcSpanEndCol . unsafeGetRealSrcSpan
 
 dropAfterLocated :: Maybe (Located a) -> [RealLocated b] -> [RealLocated b]
 dropAfterLocated loc xs = case loc of

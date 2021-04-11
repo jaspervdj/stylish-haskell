@@ -37,6 +37,7 @@ Library
     Language.Haskell.Stylish.Step.Imports
     Language.Haskell.Stylish.Step.ModuleHeader
     Language.Haskell.Stylish.Step.LanguagePragmas
+    Language.Haskell.Stylish.Step.Signature
     Language.Haskell.Stylish.Step.SimpleAlign
     Language.Haskell.Stylish.Step.Squash
     Language.Haskell.Stylish.Step.Tabs
@@ -137,6 +138,8 @@ Test-suite stylish-haskell-tests
     Language.Haskell.Stylish.Step.ModuleHeader.Tests
     Language.Haskell.Stylish.Step.LanguagePragmas
     Language.Haskell.Stylish.Step.LanguagePragmas.Tests
+    Language.Haskell.Stylish.Step.Signature
+    Language.Haskell.Stylish.Step.Signature.Tests
     Language.Haskell.Stylish.Step.SimpleAlign
     Language.Haskell.Stylish.Step.SimpleAlign.Tests
     Language.Haskell.Stylish.Step.Squash
