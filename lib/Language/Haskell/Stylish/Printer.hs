@@ -137,6 +137,11 @@ putOutputable = putText . showOutputable
 
 -- | Put all comments that has positions within 'SrcSpan' and separate by
 --   passed @P ()@
+--
+-- 1. Gets all comments associated with a source span
+-- 2. Prints them
+--
+-- Separated into getSpanComments / putAllSpanComments
 putAllSpanComments :: P () -> SrcSpan -> P ()
 putAllSpanComments suff = \case
   UnhelpfulSpan _ -> pure ()

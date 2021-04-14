@@ -8,3 +8,6 @@ extra-deps:
 - 'HsYAML-0.2.1.0@rev:1'
 
 save-hackage-creds: false
+
+packages:
+  - '.'

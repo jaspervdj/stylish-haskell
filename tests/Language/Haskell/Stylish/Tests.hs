@@ -48,7 +48,8 @@ case02 = withTestDirTree $ do
         , "      equals: \"indent 2\""
         , "      first_field: \"indent 2\""
         , "      field_comment: 2"
-        , "      deriving: 2"
+        , "      deriving_indent: 2"
+        , "      deriving_same_line: false"
         , "      via: \"indent 2\""
         ]
 
@@ -73,7 +74,8 @@ case03 = withTestDirTree $ do
         , "      equals: \"same_line\""
         , "      first_field: \"same_line\""
         , "      field_comment: 2"
-        , "      deriving: 2"
+        , "      deriving_indent: 2"
+        , "      deriving_same_line: false"
         , "      via: \"indent 2\""
         ]
 

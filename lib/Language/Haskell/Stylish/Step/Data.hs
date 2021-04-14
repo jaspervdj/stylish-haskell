@@ -17,6 +17,7 @@ import           Prelude                          hiding (init)
 
 --------------------------------------------------------------------------------
 import           Control.Monad                    (forM_, unless, when)
+import           Data.Bifunctor                   (second)
 import           Data.Function                    ((&))
 import           Data.Functor                     ((<&>))
 import           Data.List                        (sortBy)
@@ -30,7 +31,7 @@ import           GHC.Hs.Decls                     (ConDecl (..),
                                                    HsDataDefn (..), HsDecl (..),
                                                    HsDerivingClause (..),
                                                    NewOrData (..),
-                                                   TyClDecl (..))
+                                                   TyClDecl (..), LHsDerivingClause)
 import           GHC.Hs.Extension                 (GhcPs, NoExtField (..),
                                                    noExtCon)
 import           GHC.Hs.Types                     (ConDeclField (..),
@@ -41,7 +42,7 @@ import           GHC.Hs.Types                     (ConDeclField (..),
                                                    HsType (..), LHsQTyVars (..))
 import           RdrName                          (RdrName)
 import           SrcLoc                           (GenLocated (..), Located,
-                                                   RealLocated)
+                                                   RealLocated, SrcSpan)
 
 --------------------------------------------------------------------------------
 import           Language.Haskell.Stylish.Block
@@ -68,8 +69,10 @@ data Config = Config
       -- ^ Indent between data constructor and @{@ line (measured from column with data constructor name)
     , cFieldComment            :: !Int
       -- ^ Indent between column with @{@ and start of field line comment (this line has @cFieldComment = 2@)
-    , cDeriving                :: !Int
+    , cDerivingIndent          :: !Int
       -- ^ Indent before @deriving@ lines (measured from column 0)
+    , cDerivingSameLine        :: !Bool
+      -- ^ Should the @deriving@ clause be kept on the same line as the closing curly brace
     , cBreakEnums              :: !Bool
       -- ^ Break enums by newlines and follow the above rules
     , cBreakSingleConstructors :: !Bool
@@ -89,7 +92,8 @@ defaultConfig = Config
     { cEquals          = Indent 4
     , cFirstField      = Indent 4
     , cFieldComment    = 2
-    , cDeriving        = 4
+    , cDerivingIndent  = 4
+    , cDerivingSameLine = False
     , cBreakEnums      = True
     , cBreakSingleConstructors = False
     , cVia             = Indent 4
@@ -190,18 +194,36 @@ formatDataDecl cfg@Config{..} m ldecl@(L declPos decl) =
                 putConstructor cfg lineLengthAfterEq con
                 putEolComment conPos
 
-        when (hasDeriving decl) do
+        when (hasDeriving decl) $ do
           if isEnum decl && not cBreakEnums then
             space
           else do
             removeCommentTo (defn & dd_derivs & \(L pos _) -> pos) >>=
-              mapM_ \c -> newline >> spaces cDeriving >> putComment c
-            newline
-            spaces cDeriving
+              mapM_ \c -> newline >> spaces cDerivingIndent >> putComment c
+            if cDerivingSameLine
+            then space
+            else newline >> spaces cDerivingIndent
 
-        sep (newline >> spaces cDeriving) $ defn & dd_derivs & \(L pos ds) -> ds <&> \d -> do
-          putAllSpanComments (newline >> spaces cDeriving) pos
+        let derivingTail l = if null l then [] else tail l
+        let (pos, derivings) =
+              if cDerivingSameLine
+              then second derivingTail extractDerivings
+              else extractDerivings
+        let allDerivings = snd extractDerivings
+
+        -- The function is triggered only when the feature is enabled and there is at least one deriving clause
+        when (cDerivingSameLine && not (null allDerivings)) $ do
+          putAllSpanComments (newline >> spaces cDerivingIndent) pos
+          let d = head allDerivings
           putDeriving cfg d
+          when (length allDerivings >= 2) $ newline >> spaces cDerivingIndent
+
+        sep (newline >> spaces cDerivingIndent) $ derivings <&> \d -> do
+          putAllSpanComments (newline >> spaces cDerivingIndent) pos
+          putDeriving cfg d
+
+    extractDerivings :: (SrcSpan, [LHsDerivingClause GhcPs])
+    extractDerivings = (\(L pos ds) -> (pos, ds)) $ dd_derivs defn
 
     consIndent eqIndent = newline >> case (cEquals, cFirstField) of
       (SameLine, SameLine) -> spaces (eqIndent - 2)
@@ -235,7 +257,7 @@ putDeriving Config{..} (L pos clause) = do
     L _ (ViaStrategy tp) -> do
       case cVia of
         SameLine -> space
-        Indent x -> newline >> spaces (x + cDeriving)
+        Indent x -> newline >> spaces (x + cDerivingIndent)
 
       putText "via"
       space
@@ -282,7 +304,7 @@ putDeriving Config{..} (L pos clause) = do
       putText ")"
 
     indentation =
-      cDeriving + case cFirstField of
+      cDerivingIndent + case cFirstField of
         Indent x -> x
         SameLine -> 0
 

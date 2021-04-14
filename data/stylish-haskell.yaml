@@ -73,8 +73,11 @@ steps:
   #     # How many spaces to insert between the column with "," and the beginning of the comment in the next line.
   #     field_comment: 2
   #
-  #     # How many spaces to insert before "deriving" clause. Deriving clauses are always on separate lines.
-  #     deriving: 2
+  #     # How many spaces to insert before "deriving" clause. Unless specified with the next option, deriving clauses are always on separate lines.
+  #     deriving_indent: 2
+  #
+  #     # Should a single "deriving" clause be kept on the same line as the record's closing curly brace
+  #     deriving_same_line: false
   #
   #     # How many spaces to insert before "via" clause counted from indentation of deriving clause
   #     # Possible values:

@@ -71,6 +71,9 @@ tests = testGroup "Language.Haskell.Stylish.Step.Data.Tests"
     , testCase "case 56" case56
     , testCase "case 57" case57
     , testCase "case 58" case58
+    , testCase "case 59" case59
+    , testCase "case 60" case60
+    -- , testCase "case 61" case61
     ]
 
 case00 :: Assertion
@@ -1291,20 +1294,77 @@ case58 = expected @=? testStep (step sameIndentStyle) input
 
     expected = input
 
+case59 :: Assertion
+case59 = expected @=? testStep (step indentSameLineDerivingStyle) input
+  where
+    input = unlines
+      [ "data Foo"
+      , "  = Foo {"
+      , "   a :: Int"
+      , " } deriving (Functor, Applicative, Monad)"
+      ]
+    expected = unlines
+      [ "data Foo"
+      , "  = Foo"
+      , "      { a :: Int"
+      , "      } deriving (Applicative, Functor, Monad)"
+      ]
+
+case60 :: Assertion
+case60 = expected @=? testStep (step indentSameLineDerivingStyle{cDerivingIndent = 8}) input
+  where
+    input = unlines
+      [ "data Foo"
+      , "  = Foo {"
+      , "   a :: Int"
+      , " } "
+      , "  deriving (Functor, Applicative, Monad)"
+      , "  deriving stock (Show)"
+      ]
+    expected = unlines
+      [ "data Foo"
+      , "  = Foo"
+      , "      { a :: Int"
+      , "      } deriving (Applicative, Functor, Monad)"
+      , "        deriving stock (Show)"
+      ]
+
+-- case61 :: Assertion
+-- case61 = expected @=? testStep (step indentSameLineDerivingStyle{cDerivingIndent = 8}) input
+--   where
+--     input = unlines
+--       [ "data Foo"
+--       , "  = Foo {"
+--       , "   a :: Int"
+--       , " } "
+--       , "  deriving (Functor, Applicative, Monad)"
+--       , "  deriving stock (Show) -- ^ default 'Show' instance"
+--       ]
+--     expected = unlines
+--       [ "data Foo"
+--       , "  = Foo"
+--       , "      { a :: Int"
+--       , "      } deriving (Applicative, Functor, Monad)"
+--       , "        deriving stock (Show) -- ^ default 'Show' instance"
+--       ]
+
 sameSameStyle :: Config
-sameSameStyle = Config SameLine SameLine 2 2 False True SameLine False True NoMaxColumns
+sameSameStyle = Config SameLine SameLine 2 2 False False True SameLine False True NoMaxColumns
 
 sameIndentStyle :: Config
-sameIndentStyle = Config SameLine (Indent 2) 2 2 False True SameLine False True NoMaxColumns
+sameIndentStyle = Config SameLine (Indent 2) 2 2 False False True SameLine False True NoMaxColumns
 
 indentSameStyle :: Config
-indentSameStyle = Config (Indent 2) SameLine 2 2 False True SameLine False True NoMaxColumns
+indentSameStyle = Config (Indent 2) SameLine 2 2 False False True SameLine False True NoMaxColumns
 
 indentIndentStyle :: Config
-indentIndentStyle = Config (Indent 2) (Indent 2) 2 2 False True SameLine False True NoMaxColumns
+indentIndentStyle = Config (Indent 2) (Indent 2) 2 2 False False True SameLine False True NoMaxColumns
+
+indentSameLineDerivingStyle :: Config
+indentSameLineDerivingStyle = Config (Indent 2) (Indent 2) 2 2 True False True SameLine False True NoMaxColumns
 
 indentIndentStyle4 :: Config
-indentIndentStyle4 = Config (Indent 4) (Indent 4) 4 4 False True SameLine False True NoMaxColumns
+indentIndentStyle4 = Config (Indent 4) (Indent 4) 4 4 False False True SameLine False True NoMaxColumns
 
 sameSameNoSortStyle :: Config
-sameSameNoSortStyle = Config SameLine SameLine 2 2 False True SameLine False False NoMaxColumns
+sameSameNoSortStyle = Config SameLine SameLine 2 2 False False True SameLine False False NoMaxColumns
