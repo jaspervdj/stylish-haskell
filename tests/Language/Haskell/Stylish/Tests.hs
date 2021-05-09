@@ -5,6 +5,7 @@ module Language.Haskell.Stylish.Tests
 
 
 --------------------------------------------------------------------------------
+import           Data.Bifunctor                      (first)
 import           Data.List                           (sort)
 import           System.Directory                    (createDirectory)
 import           System.FilePath                     (normalise, (</>))
@@ -28,6 +29,7 @@ tests = testGroup "Language.Haskell.Stylish.Tests"
     , testCase "case 05" case05
     , testCase "case 06" case06
     , testCase "case 07" case07
+    , testCase "case 08" case08
     ]
 
 
@@ -100,7 +102,7 @@ case04 = (@?= result) =<< format Nothing (Just fileLocation) input
     fileLocation = "directory/File.hs"
     input = "module Herp"
     result = Left $
-      fileLocation <> ": RealSrcSpan SrcSpanPoint \"directory/File.hs\" 2 1:" 
+      fileLocation <> ": RealSrcSpan SrcSpanPoint \"directory/File.hs\" 2 1:"
       <> " parse error (possibly incorrect indentation or mismatched brackets)\n"
 
 --------------------------------------------------------------------------------
@@ -109,7 +111,7 @@ case05 :: Assertion
 case05 = withTestDirTree $ do
   createDirectory aDir >> writeFile c fileCont
   mapM_ (flip writeFile fileCont) fs
-  result <- findHaskellFiles False input
+  result <- map fst <$> findHaskellFiles False input
   sort result @?= (sort $ map normalise expected)
   where
     input    = c : fs
@@ -125,7 +127,7 @@ case05 = withTestDirTree $ do
 case06 :: Assertion
 case06 = withTestDirTree $ do
   mapM_ (flip writeFile "") input
-  result <- findHaskellFiles False input
+  result <- map fst <$> findHaskellFiles False input
   result @?= expected
   where
     input    = ["b.hs"]
@@ -137,8 +139,25 @@ case06 = withTestDirTree $ do
 case07 :: Assertion
 case07 = withTestDirTree $ do
   mapM_ (flip writeFile "") input
-  result <- findHaskellFiles False input
+  result <- map fst <$> findHaskellFiles False input
   result @?= expected
   where
     input    = []
     expected = input
+
+
+--------------------------------------------------------------------------------
+-- | Should work for .hsc files.
+case08 :: Assertion
+case08 = withTestDirTree $ do
+  createDirectory aDir >> writeFile c fileCont
+  mapM_ (flip writeFile fileCont) fs
+  result <- findHaskellFiles False input
+  sort result @?= (sort $ map (first normalise) expected)
+  where
+    input    = c : fs
+    fs = ["b.hsc", "a.hsc", "d.hs"]
+    c  = aDir </> "c.hsc"
+    aDir     = "aDir"
+    expected = [("a.hsc", ["CPP"]), ("b.hsc", ["CPP"]), (c, ["CPP"]), ("d.hs", [])]
+    fileCont = ""

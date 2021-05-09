@@ -8,6 +8,7 @@ module Main
 --------------------------------------------------------------------------------
 import           Control.Monad            (forM_, unless, when)
 import qualified Data.ByteString.Char8    as BC8
+import           Data.List                (nub)
 import           Data.Version             (showVersion)
 import qualified Options.Applicative      as OA
 import           System.Exit              (exitFailure)
@@ -111,21 +112,24 @@ stylishHaskell sa = do
             conf <- loadConfig verbose' (saConfig sa)
             filesR <- case (saRecursive sa) of
               True -> findHaskellFiles (saVerbose sa) (saFiles sa)
-              _    -> return $ saFiles sa
+              _    -> return $ considerFiles $ saFiles sa
             let steps = configSteps conf
             forM_ steps $ \s -> verbose' $ "Enabled " ++ stepName s ++ " step"
             verbose' $ "Extra language extensions: " ++
                 show (configLanguageExtensions conf)
-            res <- foldMap (file sa conf) (files' filesR)
+            res <- case files' filesR of
+              Nothing -> file sa conf Nothing
+              Just xs -> foldMap (\(fp, exts) -> file sa (extend conf exts) (Just fp)) xs
 
             verbose' $ "Exit code behavior: " ++ show (configExitCode conf)
             when (configExitCode conf == ErrorOnFormatExitBehavior && res == DidFormat) exitFailure
   where
     verbose' = makeVerbose (saVerbose sa)
+    extend conf exts = conf { configLanguageExtensions = nub $ exts <> configLanguageExtensions conf }
     files' x = case (saRecursive sa, null x) of
-      (True,True) -> []         -- No file to format and recursive enabled.
-      (_,True)    -> [Nothing]  -- Involving IO.stdin.
-      (_,False)   -> map Just x -- Process available files.
+      (True,True) -> Just [] -- No file to format and recursive enabled.
+      (_,True)    -> Nothing -- Involving IO.stdin.
+      (_,False)   -> Just x  -- Process available files.
 
 data FormattingResult
   = DidFormat
