@@ -90,6 +90,11 @@ steps:
   #     # Default: false
   #     break_enums: false
   #
+  #     # Whether or not to break newtype types before `=` sign
+  #     #
+  #     # Default: true
+  #     break_newtypes: true
+  #
   #     # Whether or not to break single constructor data types before `=` sign
   #     #
   #     # Default: true

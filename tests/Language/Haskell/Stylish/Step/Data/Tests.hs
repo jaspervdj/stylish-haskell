@@ -1378,19 +1378,19 @@ case62 = expected @=? testStep (step sameIndentStyle) input
       ]
 
 sameSameStyle :: Config
-sameSameStyle = Config SameLine SameLine 2 2 False True SameLine False True NoMaxColumns
+sameSameStyle = Config SameLine SameLine 2 2 False True True SameLine False True NoMaxColumns
 
 sameIndentStyle :: Config
-sameIndentStyle = Config SameLine (Indent 2) 2 2 False True SameLine False True NoMaxColumns
+sameIndentStyle = Config SameLine (Indent 2) 2 2 False True True SameLine False True NoMaxColumns
 
 indentSameStyle :: Config
-indentSameStyle = Config (Indent 2) SameLine 2 2 False True SameLine False True NoMaxColumns
+indentSameStyle = Config (Indent 2) SameLine 2 2 False True True SameLine False True NoMaxColumns
 
 indentIndentStyle :: Config
-indentIndentStyle = Config (Indent 2) (Indent 2) 2 2 False True SameLine False True NoMaxColumns
+indentIndentStyle = Config (Indent 2) (Indent 2) 2 2 False True True SameLine False True NoMaxColumns
 
 indentIndentStyle4 :: Config
-indentIndentStyle4 = Config (Indent 4) (Indent 4) 4 4 False True SameLine False True NoMaxColumns
+indentIndentStyle4 = Config (Indent 4) (Indent 4) 4 4 False True True SameLine False True NoMaxColumns
 
 sameSameNoSortStyle :: Config
-sameSameNoSortStyle = Config SameLine SameLine 2 2 False True SameLine False False NoMaxColumns
+sameSameNoSortStyle = Config SameLine SameLine 2 2 False True True SameLine False False NoMaxColumns
